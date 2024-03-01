@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import httpStatus from "http-status";
 import routes from "./app/routes";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
+import config from "./config";
 
 const app: Application = express();
 
@@ -18,6 +19,7 @@ const app: Application = express();
 const allowedOrigins = [
   "http://localhost:3000",
   "https://elp-client.vercel.app",
+  "https://easyjobpreparetion.vercel.app",
   // Add other allowed origins as needed
 ];
 

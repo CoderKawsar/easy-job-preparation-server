@@ -11,6 +11,7 @@ import { IGenericResponse } from "../../../interfaces/common";
 import { IUploadFile } from "../../../interfaces/file";
 import { Request } from "express";
 import { FileUploadHelper } from "../../helpers/fileUploadHelper";
+import encryptLink from "../../helpers/encryptLink";
 
 // create Book
 const addBook = async (req: Request): Promise<IBook> => {
@@ -31,6 +32,13 @@ const addBook = async (req: Request): Promise<IBook> => {
       req.body.cover_page = uploadedImage.secure_url;
     }
   }
+
+  const { pdf_link, ...others } = req.body;
+  const encryptedPdfLink = encryptLink(pdf_link);
+  req.body = {
+    pdf_link: encryptedPdfLink,
+    ...others,
+  };
 
   const result = await Book.create(req.body);
   return result;
@@ -213,6 +221,15 @@ const updateBook = async (req: Request): Promise<IBook | null> => {
       // delete that book cover page from cloudinary
       FileUploadHelper.deleteFromCloudinary(book?.cover_page as string);
     }
+  }
+
+  if (req.body.pdf_link) {
+    const { pdf_link, ...others } = req.body;
+    const encryptedPdfLink = encryptLink(pdf_link);
+    req.body = {
+      pdf_link: encryptedPdfLink,
+      ...others,
+    };
   }
 
   // updating book

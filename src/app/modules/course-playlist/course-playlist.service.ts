@@ -10,6 +10,7 @@ import { coursePlaylistSearchableFields } from "./course-playlist.constants";
 import { paginationHelpers } from "../../helpers/paginationHelpers";
 import { SortOrder } from "mongoose";
 import { ICourseFilters } from "../course/course.interface";
+import encryptLink from "../../helpers/encryptLink";
 
 // create CoursePlaylist
 const createCoursePlaylist = async (
@@ -21,6 +22,13 @@ const createCoursePlaylist = async (
   if (!course) {
     throw new ApiError(httpStatus.OK, "Course not found!");
   }
+
+  const { playlist_link, ...others } = payload;
+  const encryptedPlaylistLink = encryptLink(playlist_link);
+  payload = {
+    playlist_link: encryptedPlaylistLink,
+    ...others,
+  };
 
   const result = await CoursePlaylist.create(payload);
   return result;
@@ -132,6 +140,14 @@ const updateCoursePlaylist = async (
   id: string,
   payload: Partial<ICoursePlaylist>
 ): Promise<ICoursePlaylist | null> => {
+  if (payload.playlist_link) {
+    const { playlist_link, ...others } = payload;
+    const encryptedPlaylistLink = encryptLink(playlist_link);
+    payload = {
+      playlist_link: encryptedPlaylistLink,
+      ...others,
+    };
+  }
   // updating CoursePlaylist
   const result = await CoursePlaylist.findOneAndUpdate({ _id: id }, payload, {
     new: true,

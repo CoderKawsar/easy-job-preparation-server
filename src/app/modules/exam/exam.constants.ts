@@ -7,6 +7,7 @@ export const examFilterableFields = [
   "cost",
   "is_active",
   "exam_type",
+  "_id",
 ];
 
 export const examSearchableFields = ["description", "title"];
