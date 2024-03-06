@@ -20,6 +20,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "https://elp-client.vercel.app",
   "https://easyjobpreparetion.vercel.app",
+  `${config.frontend_site_url}`,
   // Add other allowed origins as needed
 ];
 
