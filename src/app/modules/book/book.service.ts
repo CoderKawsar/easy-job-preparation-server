@@ -13,6 +13,7 @@ import { Request } from "express";
 import { FileUploadHelper } from "../../helpers/fileUploadHelper";
 import encryptLink from "../../helpers/encryptLink";
 
+
 // create Book
 const addBook = async (req: Request): Promise<IBook> => {
   // if the provided course_id have the course or not in db
@@ -39,7 +40,6 @@ const addBook = async (req: Request): Promise<IBook> => {
     pdf_link: encryptedPdfLink,
     ...others,
   };
-
   const result = await Book.create(req.body);
   return result;
 };

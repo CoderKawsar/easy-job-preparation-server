@@ -10,7 +10,8 @@ import { coursePlaylistSearchableFields } from "./course-playlist.constants";
 import { paginationHelpers } from "../../helpers/paginationHelpers";
 import { SortOrder } from "mongoose";
 import { ICourseFilters } from "../course/course.interface";
-import encryptLink from "../../helpers/encryptLink";
+import encryptLink from "../../helpers/protectLink";
+
 
 // create CoursePlaylist
 const createCoursePlaylist = async (

@@ -20,6 +20,7 @@ import { BkashRoutes } from "../modules/payment-bkash/bkash.route";
 import { SettingsRoutes } from "../modules/settings/settings.route";
 import { NagadPaymentRoutes } from "../modules/payment-nagad/nagad.route";
 import { NoticeRoutes } from "../modules/notice/notice.route";
+import { MobileAppRoutes } from "../modules/mobile-app/mobile-app.route";
 
 const router = Router();
 
@@ -45,6 +46,7 @@ const moduleRoutes = [
   { path: "/bkash", route: BkashRoutes },
   { path: "/nagad", route: NagadPaymentRoutes },
   { path: "/settings", route: SettingsRoutes },
+  { path: "/mobile-app", route: MobileAppRoutes },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
