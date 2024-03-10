@@ -11,7 +11,8 @@ import { IGenericResponse } from "../../../interfaces/common";
 import { IUploadFile } from "../../../interfaces/file";
 import { Request } from "express";
 import { FileUploadHelper } from "../../helpers/fileUploadHelper";
-import encryptLink from "../../helpers/protectLink";
+import encryptLink from "../../helpers/encryptLink";
+
 
 // create Book
 const addBook = async (req: Request): Promise<IBook> => {

@@ -12,6 +12,7 @@ import { SortOrder } from "mongoose";
 import { ICourseFilters } from "../course/course.interface";
 import encryptLink from "../../helpers/protectLink";
 
+
 // create CoursePlaylist
 const createCoursePlaylist = async (
   payload: ICoursePlaylist
@@ -148,7 +149,6 @@ const updateCoursePlaylist = async (
       ...others,
     };
   }
-
   // updating CoursePlaylist
   const result = await CoursePlaylist.findOneAndUpdate({ _id: id }, payload, {
     new: true,
