@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node --security-revert=CVE-2023-46809 dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts"
   },
   "author": "Elite developer unity",
