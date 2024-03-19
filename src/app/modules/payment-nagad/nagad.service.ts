@@ -43,7 +43,7 @@ async function confirmPayment(
     },
   };
 
-  const newIP = ip === "::1" || ip === "127.0.0.1" ? "103.100.102.100" : ip;
+  const newIP = ip === "::1" || ip === "127.0.0.1" ? "34.16.127.175" : ip;
   return await nagadPost<INagadPaymentURL>(
     `${config.nagad.base_url}/api/dfs/check-out/complete/${paymentReferenceId}`,
     payload,
@@ -83,7 +83,7 @@ const createPayment = async (
     signature: NagadUtills.sign(sensitive, privateKey),
   };
 
-  const newIP = ip === "::1" || ip === "127.0.0.1" ? "103.153.155.198" : ip;
+  const newIP = ip === "::1" || ip === "127.0.0.1" ? "34.16.127.175" : ip;
 
   const { sensitiveData } = await nagadPost<INagadCreatePaymentResponse>(
     endpoint,

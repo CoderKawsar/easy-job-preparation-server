@@ -4,9 +4,8 @@ export interface ICategory {
   _id: string;
   title: string;
   icon?: string;
-  createdAt: Date;
+  createdAt?: Date;
   updatedAt?: Date;
-  hudai?: string;
   subCategory?: {
     _id?: Types.ObjectId;
     title?: string;

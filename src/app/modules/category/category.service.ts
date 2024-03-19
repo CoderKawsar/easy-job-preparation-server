@@ -6,6 +6,7 @@ import { Request } from "express";
 import { IUploadFile } from "../../../interfaces/file";
 import { FileUploadHelper } from "../../helpers/fileUploadHelper";
 import { SubCategory } from "../sub-category/sub-category.model";
+import mongoose from "mongoose";
 
 // create category
 const createCategory = async (req: Request) => {
@@ -24,13 +25,6 @@ const createCategory = async (req: Request) => {
 
 // get all categories
 const getAllCategories = async (): Promise<ICategory[]> => {
-  const categories: ICategory[] = await Category.find({});
-
-  // if there is no category, throw error
-  if (!categories || !categories.length) {
-    throw new ApiError(httpStatus.OK, "No category found!");
-  }
-
   const categoriesWithSubcategories = await Category.aggregate([
     {
       $lookup: {
@@ -150,14 +144,38 @@ const getAllCategories = async (): Promise<ICategory[]> => {
 
 // get category
 const getSingleCategory = async (id: string): Promise<ICategory | null> => {
-  const result = await Category.findById(id);
+  const categoryWithSubcategories = await Category.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(id) },
+    },
+    {
+      $lookup: {
+        from: "subcategories",
+        localField: "_id",
+        foreignField: "category_id",
+        as: "subCategories",
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        title: 1,
+        icon: 1,
+        subCategories: {
+          _id: 1,
+          title: 1,
+          icon: 1,
+        },
+      },
+    },
+  ]);
 
   // if the category is not found, throw error
-  if (!result) {
+  if (!categoryWithSubcategories.length) {
     throw new ApiError(httpStatus.OK, "Category not found!");
   }
 
-  return result;
+  return categoryWithSubcategories[0];
 };
 
 // update category

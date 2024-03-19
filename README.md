@@ -1,4 +1,4 @@
-# Easy Learning Platform Server
+# Easy Learning Platform Server Site
 
 ## Project Overview:
 

@@ -111,29 +111,45 @@ const getAllBooks = async (
   };
 };
 
-// const getAllBooksOfASubCategory = async (
-//   sub_category_id: string
-// ): Promise<IBook[]> => {
-//   const allBooks = await Book.find({}).populate({
-//     path: "course_id",
-//     populate: {
-//       path: "sub_category_id",
-//       populate: {
-//         path: "category_id",
-//       },
-//     },
-//   });
+const getBooksOfACategory = async (category_id: string): Promise<IBook[]> => {
+  const result = await Book.aggregate([
+    {
+      $lookup: {
+        from: "courses",
+        localField: "course_id",
+        foreignField: "_id",
+        as: "courses",
+      },
+    },
+    {
+      $unwind: "$courses",
+    },
+    {
+      $lookup: {
+        from: "subcategories",
+        localField: "courses.sub_category_id",
+        foreignField: "_id",
+        as: "subcategories",
+      },
+    },
+    {
+      $unwind: "$subcategories",
+    },
+    {
+      $match: {
+        "subcategories.category_id": new mongoose.Types.ObjectId(category_id),
+      },
+    },
+    {
+      $project: {
+        courses: 0, // Exclude the 'courses' field
+        subcategories: 0, // Exclude the 'subcategories' field
+      },
+    },
+  ]);
 
-//   let result: IBook[] = [];
-//   if (allBooks?.length) {
-//     result = allBooks?.filter(
-//       (book) =>
-//         // @ts-ignore
-//         book?.course_id?.sub_category_id?._id.toString() === sub_category_id
-//     );
-//   }
-//   return result;
-// };
+  return result;
+};
 
 const getAllBooksOfASubCategory = async (
   sub_category_id: string
@@ -261,6 +277,7 @@ const deleteBook = async (id: string) => {
 export const BookService = {
   addBook,
   getAllBooks,
+  getBooksOfACategory,
   getAllBooksOfASubCategory,
   getBooksOfACourse,
   getSingleBook,

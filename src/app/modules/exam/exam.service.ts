@@ -7,7 +7,7 @@ import { IPaginationOptions } from "../../../interfaces/pagination";
 import { examSearchableFields } from "./exam.constants";
 import { paginationHelpers } from "../../helpers/paginationHelpers";
 import { IGenericResponse } from "../../../interfaces/common";
-import { SortOrder } from "mongoose";
+import mongoose, { SortOrder } from "mongoose";
 import { ExamPayment } from "../exam-payment/exam-payment.model";
 import { ExamResult } from "../exam-result/exam-result.model";
 import { IExamPayment } from "../exam-payment/exam-payment.interface";
@@ -115,6 +115,78 @@ const getAllExams = async (
   };
 };
 
+const getSubCategoryExams = async (sub_category_id: string) => {
+  const exams = await Exam.aggregate([
+    {
+      $lookup: {
+        from: "courses",
+        localField: "course_id",
+        foreignField: "_id",
+        as: "course",
+      },
+    },
+    {
+      $unwind: "$course",
+    },
+    {
+      $match: {
+        "course.sub_category_id": new mongoose.Types.ObjectId(sub_category_id),
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        title: 1,
+        total_marks: 1,
+        duration_in_minutes: 1,
+        fee: 1,
+        is_active: 1,
+        exam_type: 1,
+        course: {
+          _id: 1,
+          title: 1,
+        },
+      },
+    },
+  ]);
+
+  return exams;
+};
+
+const getCategoryExams = async (category_id: string) => {
+  const exams = await Exam.aggregate([
+    {
+      $lookup: {
+        from: "courses",
+        localField: "course_id",
+        foreignField: "_id",
+        as: "course",
+      },
+    },
+    {
+      $unwind: "$course",
+    },
+    {
+      $match: {
+        "course.category_id": new mongoose.Types.ObjectId(category_id),
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        title: 1,
+        total_marks: 1,
+        duration_in_minutes: 1,
+        fee: 1,
+        is_active: 1,
+        exam_type: 1,
+      },
+    },
+  ]);
+
+  return exams;
+};
+
 // get all due exams
 const getMyDueExams = async (user_id: string): Promise<string[] | null> => {
   const dueExamIds: string[] = [];
@@ -173,6 +245,8 @@ export const ExamService = {
   createExam,
   BuyAnExam,
   getAllExams,
+  getSubCategoryExams,
+  getCategoryExams,
   getMyDueExams,
   getSingleExam,
   updateExam,

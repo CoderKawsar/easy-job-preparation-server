@@ -20,19 +20,28 @@ import { SubscriptionHistory } from "../subscription-history/subscription-histor
 import { Types } from "mongoose";
 import { ISubscription } from "../subscription/subscription.interface";
 import { PaymentUtills } from "../payment/payment.utills";
+import { Category } from "../category/category.model";
 
 // create Course
 const createCourse = async (req: Request): Promise<ICourse> => {
   // to check if the sub-category is present of the provided sub-category-id
-  const { sub_category_id } = req.body;
-  const subCategory = await SubCategory.findById(sub_category_id).populate(
-    "category_id"
-  );
-  if (!subCategory) {
-    throw new ApiError(httpStatus.OK, "Sub category not found!");
+  const { sub_category_id, category_id } = req.body;
+  if (sub_category_id) {
+    const subCategory = await SubCategory.findById(sub_category_id).populate(
+      "category_id"
+    );
+    if (!subCategory) {
+      throw new ApiError(httpStatus.OK, "Sub category not found!");
+    }
+    // @ts-ignore
+    req.body.category_id = subCategory.category_id._id.toString();
+  } else if (category_id) {
+    // if the category present in providing category id
+    const category = await Category.findById(category_id);
+    if (!category) {
+      throw new ApiError(httpStatus.OK, "Category not found!");
+    }
   }
-  // @ts-ignore
-  req.body.category_id = subCategory.category_id._id.toString();
 
   if (req.file) {
     const file = req.file as IUploadFile;
@@ -44,14 +53,23 @@ const createCourse = async (req: Request): Promise<ICourse> => {
     }
   }
 
-  const result = (await Course.create(req.body)).populate({
-    path: "sub_category_id",
-    select: "title _id",
-    populate: {
+  let result;
+  if (sub_category_id) {
+    result = (await Course.create(req.body)).populate({
+      path: "sub_category_id",
+      select: "title _id",
+      populate: {
+        path: "category_id",
+        select: "title _id",
+      },
+    });
+  } else {
+    delete req.body.sub_category_id;
+    result = (await Course.create(req.body)).populate({
       path: "category_id",
       select: "title _id",
-    },
-  });
+    });
+  }
   return result;
 };
 
@@ -353,15 +371,22 @@ const getAllCourses = async (
     .sort(sortConditions)
     .skip(skip)
     .limit(limit)
-    .populate({
-      path: "sub_category_id",
-      select: "title _id",
-      populate: {
-        path: "category_id",
+    .populate([
+      {
+        path: "sub_category_id",
+        select: "title _id",
+        populate: {
+          path: "category_id",
+          select: "title _id",
+        },
+      },
+      {
+        path: "category_id", // Conditional population for root category_id
         select: "title _id",
       },
-    })
+    ])
     .select("-createdAt -updatedAt -__v -study_materials");
+
   const total = await Course.countDocuments(whereConditions);
 
   return {
@@ -443,15 +468,21 @@ const getAllRoutines = async () => {
 // get Course
 const getSingleCourse = async (id: string): Promise<ICourse | null> => {
   const result = await Course.findById(id)
-    .populate({
-      path: "sub_category_id",
-      select: "title _id",
-      populate: {
+    .populate([
+      {
+        path: "sub_category_id",
+        select: "title _id",
+        populate: {
+          path: "category_id",
+          select: "title _id",
+        },
+      },
+      {
         path: "category_id",
         select: "title _id",
       },
-    })
-    .select("-createdAt -updatedAt -__v");
+    ])
+    .select("-createdAt -updatedAt -__v -study_materials");
   // if the Course is not found, throw error
   if (!result) {
     throw new ApiError(httpStatus.OK, "Course not found!");
@@ -481,6 +512,9 @@ const updateCourse = async (req: Request): Promise<ICourse | null> => {
       FileUploadHelper.deleteFromCloudinary(course?.banner as string);
     }
   }
+
+  if (req.body.category_id && !req.body.sub_category_id)
+    delete req.body.sub_category_id;
 
   // updating course
   const result = await Course.findOneAndUpdate(

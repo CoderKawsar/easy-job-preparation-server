@@ -6,6 +6,7 @@ import { paginationFields } from "../../constants/pagination";
 import pick from "../../../shared/pick";
 import { OrderDetailsService } from "./order-details.service";
 import { orderDetailsFilterableFields } from "./order-details.constants";
+
 const createOrderDetails = catchAsync(async (req: Request, res: Response) => {
   const result = await OrderDetailsService.createOrderDetails(req.body);
 
