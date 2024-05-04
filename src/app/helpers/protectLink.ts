@@ -11,9 +11,26 @@ function encryptLink(originalLink: string) {
     Buffer.from(key, "hex"),
     Buffer.from(iv, "hex")
   );
-  let encryptedLink = cipher.update(originalLink, "utf-8", "hex");
+
+  let encryptedLink = cipher.update(originalLink, "utf8", "hex");
   encryptedLink += cipher.final("hex");
+
   return encryptedLink;
 }
 
-export default encryptLink;
+// Utility function to decrypt a link
+function decryptLink(encryptedLink: string) {
+  const decipher = crypto.createDecipheriv(
+    "aes-128-cbc",
+    Buffer.from(key, "hex"),
+    Buffer.from(iv, "hex")
+  );
+  let decryptedLink = decipher.update(encryptedLink, "hex", "utf-8");
+  decryptedLink += decipher.final("utf-8");
+  return decryptedLink;
+}
+
+export const LinkProtectionHelpers = {
+  encrypt: encryptLink,
+  decrypt: decryptLink,
+};

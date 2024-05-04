@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { BookController } from "./book.controller";
-import validateRequest from "../../middlewares/validateRequest";
 import authRole from "../../middlewares/authRole";
 import { ENUM_USER_ROLE } from "../../enums/user";
 import { BookValidation } from "./book.validation";
@@ -33,8 +32,14 @@ router.get(
   BookController.getAllBooksOfASubCategory
 );
 
+// get books of a subject
+router.get("/subject/:subject_id", BookController.getAllBooksOfASubject);
+
 // get books of a course
 router.get("/course/:course_id", BookController.getAllBooksOfACourse);
+
+// get books of a prostuti
+router.get("/prostuti/:prostuti_title", BookController.getBooksOfAProstuti);
 
 // get single Book
 router.get("/:id", BookController.getSingleBook);

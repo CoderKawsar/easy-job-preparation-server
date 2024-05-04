@@ -13,7 +13,7 @@ const messageToAll = async (message: string) => {
     {
       headers: {
         "Content-Type": "application/json",
-        Authorization: config.firebase_messaging_key,
+        Authorization: config.mobile.firebase_messaging_key,
       },
     }
   );

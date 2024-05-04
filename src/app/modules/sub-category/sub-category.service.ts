@@ -93,6 +93,30 @@ const getAllSubCategories = async (
   };
 };
 
+// get all unique SubCategories
+const getAllUniqueSubCategories = async () => {
+  const result = await SubCategory.distinct("title");
+
+  let predefinedSubcategories = ["প্রিলিমিনারি", "লিখিত", "ভাইভা", "অন্যান্য"];
+
+  let sortedSubcategories = result.sort((a, b) => {
+    let indexA = predefinedSubcategories.indexOf(a);
+    let indexB = predefinedSubcategories.indexOf(b);
+
+    // If not found in predefinedCategories, push to the end
+    if (indexA === -1) indexA = predefinedSubcategories.length;
+    if (indexB === -1) indexB = predefinedSubcategories.length;
+
+    // Special handling for "অন্যান্য"
+    if (a === "অন্যান্য") return 1;
+    if (b === "অন্যান্য") return -1;
+
+    return indexA - indexB;
+  });
+
+  return sortedSubcategories;
+};
+
 // get SubCategory
 const getSingleSubCategory = async (
   id: string
@@ -180,6 +204,7 @@ const deleteSubCategory = async (id: string) => {
 export const SubCategoryService = {
   createSubCategory,
   getAllSubCategories,
+  getAllUniqueSubCategories,
   getSingleSubCategory,
   updateSubCategory,
   deleteSubCategory,

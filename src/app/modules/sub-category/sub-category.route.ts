@@ -24,6 +24,9 @@ router.post(
 // get all sub-categories
 router.get("/", SubCategoryController.getAllSubCategories);
 
+// get all sub-categories(unique)
+router.get("/unique", SubCategoryController.getAllUniqueSubCategories);
+
 // get single SubCategory
 router.get("/:id", SubCategoryController.getSingleSubCategory);
 

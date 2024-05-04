@@ -3,7 +3,6 @@ import * as fs from "fs";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
-import config from "../../../config";
 
 export function formatKey(key: string, type: "PUBLIC" | "PRIVATE") {
   return /begin/i.test(key)

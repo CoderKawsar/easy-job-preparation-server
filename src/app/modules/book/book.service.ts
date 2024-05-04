@@ -1,30 +1,20 @@
 import httpStatus from "http-status";
 import ApiError from "../../../errors/ApiError";
-import { Course } from "../course/course.model";
 import { IBook, IBookFilters } from "./book.interface";
 import { Book } from "./book.model";
 import { IPaginationOptions } from "../../../interfaces/pagination";
 import { bookSearchableFields } from "./book.constants";
 import { paginationHelpers } from "../../helpers/paginationHelpers";
-import mongoose, { SortOrder } from "mongoose";
+import { SortOrder } from "mongoose";
 import { IGenericResponse } from "../../../interfaces/common";
 import { IUploadFile } from "../../../interfaces/file";
 import { Request } from "express";
 import { FileUploadHelper } from "../../helpers/fileUploadHelper";
-import encryptLink from "../../helpers/encryptLink";
-
+import { BookUtills } from "./book.utills";
+import { LinkProtectionHelpers } from "../../helpers/protectLink";
 
 // create Book
 const addBook = async (req: Request): Promise<IBook> => {
-  // if the provided course_id have the course or not in db
-  const { course_id } = req.body;
-  if (course_id) {
-    const course = await Course.findById(course_id);
-    if (!course) {
-      throw new ApiError(httpStatus.OK, "Course not found!");
-    }
-  }
-
   if (req.file) {
     const file = req.file as IUploadFile;
     const uploadedImage = await FileUploadHelper.uploadToCloudinary(file);
@@ -35,11 +25,14 @@ const addBook = async (req: Request): Promise<IBook> => {
   }
 
   const { pdf_link, ...others } = req.body;
-  const encryptedPdfLink = encryptLink(pdf_link);
-  req.body = {
-    pdf_link: encryptedPdfLink,
-    ...others,
-  };
+  if (pdf_link) {
+    const encryptedPdfLink = LinkProtectionHelpers.encrypt(pdf_link);
+    req.body = {
+      pdf_link: encryptedPdfLink,
+      ...others,
+    };
+  }
+
   const result = await Book.create(req.body);
   return result;
 };
@@ -111,92 +104,178 @@ const getAllBooks = async (
   };
 };
 
-const getBooksOfACategory = async (category_id: string): Promise<IBook[]> => {
-  const result = await Book.aggregate([
+// get books of a subject
+const getBooksOfASubject = async (
+  subject_id: string,
+  filters: IBookFilters,
+  paginationOptions: IPaginationOptions
+): Promise<IGenericResponse<IBook[]>> => {
+  const baseQuery = { subject_id };
+
+  return await BookUtills.filterSingleIdFromArrayField(
+    baseQuery,
+    filters,
+    paginationOptions
+  );
+};
+
+const getBooksOfACategory = async (
+  category_id: string,
+  filters: IBookFilters,
+  paginationOptions: IPaginationOptions
+): Promise<IGenericResponse<IBook[]>> => {
+  const baseQuery = { category_id };
+
+  return await BookUtills.filterSingleIdFromArrayField(
+    baseQuery,
+    filters,
+    paginationOptions
+  );
+};
+
+const getBooksOfASubCategory = async (
+  sub_category_id: string,
+  filters: IBookFilters,
+  paginationOptions: IPaginationOptions
+): Promise<IGenericResponse<IBook[]>> => {
+  const baseQuery = { sub_category_id };
+
+  return await BookUtills.filterSingleIdFromArrayField(
+    baseQuery,
+    filters,
+    paginationOptions
+  );
+};
+
+// get books of a course
+const getBooksOfACourse = async (
+  course_id: string,
+  filters: IBookFilters,
+  paginationOptions: IPaginationOptions
+): Promise<IGenericResponse<IBook[]>> => {
+  const baseQuery = { course_id };
+
+  return await BookUtills.filterSingleIdFromArrayField(
+    baseQuery,
+    filters,
+    paginationOptions
+  );
+};
+
+const getBooksOfAProstuti = async (
+  prostuti_title: string,
+  filters: IBookFilters,
+  paginationOptions: IPaginationOptions
+): Promise<IGenericResponse<IBook[]>> => {
+  const { searchTerm, ...filtersData } = filters;
+
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelpers.calculatePagination(paginationOptions);
+
+  const pipeline = [
     {
-      $lookup: {
-        from: "courses",
-        localField: "course_id",
-        foreignField: "_id",
-        as: "courses",
-      },
-    },
-    {
-      $unwind: "$courses",
+      $unwind: "$sub_category_id", // Unwind sub_category_id for matching
     },
     {
       $lookup: {
         from: "subcategories",
-        localField: "courses.sub_category_id",
+        localField: "sub_category_id",
         foreignField: "_id",
-        as: "subcategories",
+        as: "sub_category_id",
       },
     },
     {
-      $unwind: "$subcategories",
-    },
-    {
       $match: {
-        "subcategories.category_id": new mongoose.Types.ObjectId(category_id),
+        "sub_category_id.title": prostuti_title, // Filter by prostuti title
+        ...filtersData, // Apply other filters if provided
       },
     },
     {
       $project: {
-        courses: 0, // Exclude the 'courses' field
-        subcategories: 0, // Exclude the 'subcategories' field
+        title: 1,
+        writer: 1,
+        price: 1,
+        description: 1,
+        discount_price: 1,
+        cover_page: 1,
+        format: 1,
+        sample_pdf_link: 1,
+        pdf_link: 1,
+        category_id: 1,
+        sub_category_id: "$sub_category_id._id",
+        course_id: 1,
+        subject_id: 1,
+        createdAt: 1,
       },
     },
-  ]);
+  ];
 
-  return result;
-};
+  const intermediatoryBooks = await Book.aggregate(pipeline);
 
-const getAllBooksOfASubCategory = async (
-  sub_category_id: string
-): Promise<IBook[]> => {
-  const result = await Book.aggregate([
-    {
-      $lookup: {
-        from: "courses",
-        localField: "course_id",
-        foreignField: "_id",
-        as: "courses",
-      },
-    },
-    {
-      $unwind: "$courses",
-    },
-    {
-      $match: {
-        "courses.sub_category_id": new mongoose.Types.ObjectId(sub_category_id),
-      },
-    },
-    {
-      $project: {
-        courses: 0, // Exclude the 'courses' field
-      },
-    },
-  ]);
+  const distinctBooks = intermediatoryBooks.reduce((acc, book) => {
+    // Check if the book's _id already exists in the accumulator
+    const existingBook = acc.find((existing: IBook) =>
+      existing._id.equals(book._id)
+    );
 
-  return result;
-};
+    // If not found, add the book to the accumulator
+    if (!existingBook) {
+      acc.push(book);
+    }
 
-// get books of a course
-const getBooksOfACourse = async (course_id: string): Promise<IBook[]> => {
-  const result = await Book.aggregate([
-    {
-      $match: {
-        course_id: {
-          $elemMatch: { $eq: new mongoose.Types.ObjectId(course_id) },
-        },
-      },
+    return acc;
+  }, []);
+
+  let result: IBook[] = [];
+
+  // Sort the books
+  if (sortBy && sortOrder) {
+    // @ts-ignore
+    const sortFunction = (a, b) => {
+      const fieldA = a[sortBy];
+      const fieldB = b[sortBy];
+
+      // Handle different data types
+      if (typeof fieldA === "string") {
+        return fieldA.localeCompare(fieldB, undefined, { numeric: true }); // Case-insensitive, numeric comparison (optional)
+      } else if (fieldA instanceof Date && fieldB instanceof Date) {
+        return fieldA.getTime() - fieldB.getTime(); // Sort by date in milliseconds
+      } else {
+        // Assume numeric comparison for other data types
+        return fieldA - fieldB;
+      }
+    };
+
+    result = distinctBooks.sort(sortFunction);
+
+    // Reverse order for descending sort
+    if (sortOrder === "desc") {
+      result.reverse();
+    }
+  } else {
+    result = distinctBooks; // No sorting required, use original array
+  }
+
+  const beforePagination = [...result];
+  const paginatedBooks = beforePagination.splice(skip, skip + limit);
+
+  const total = distinctBooks?.length;
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
     },
-  ]);
-  return result;
+    data: paginatedBooks,
+  };
 };
 
 // get single Book
-const getSingleBook = async (id: string): Promise<IBook | null> => {
+const getSingleBook = async (
+  id: string,
+  isMobileApp: boolean
+): Promise<IBook | null> => {
   const result = await Book.findById(id).populate({
     path: "course_id",
     select: "title membership_type title",
@@ -214,7 +293,15 @@ const getSingleBook = async (id: string): Promise<IBook | null> => {
     throw new ApiError(httpStatus.OK, "Book not found!");
   }
 
-  return result;
+  const booksData = JSON.parse(JSON.stringify(result));
+
+  if (isMobileApp && result?.pdf_link) {
+    booksData.pdf_link = LinkProtectionHelpers.decrypt(
+      result?.pdf_link as string
+    );
+  }
+
+  return booksData;
 };
 
 // update Book
@@ -225,13 +312,15 @@ const updateBook = async (req: Request): Promise<IBook | null> => {
     throw new ApiError(httpStatus.OK, "Book not found!");
   }
 
+  let payload = req.body;
+
   // if image is given, upload new, and delete old one
   if (req.file) {
     const file = req.file as IUploadFile;
     const uploadedImage = await FileUploadHelper.uploadToCloudinary(file);
 
     if (uploadedImage) {
-      req.body.cover_page = uploadedImage.secure_url;
+      payload.cover_page = uploadedImage.secure_url;
     }
     if (book.cover_page) {
       // delete that book cover page from cloudinary
@@ -240,16 +329,16 @@ const updateBook = async (req: Request): Promise<IBook | null> => {
   }
 
   if (req.body.pdf_link) {
-    const { pdf_link, ...others } = req.body;
-    const encryptedPdfLink = encryptLink(pdf_link);
-    req.body = {
+    const { pdf_link, ...others } = payload;
+    const encryptedPdfLink = LinkProtectionHelpers.encrypt(pdf_link);
+    payload = {
       pdf_link: encryptedPdfLink,
       ...others,
     };
   }
 
   // updating book
-  const result = await Book.findOneAndUpdate({ _id: req.params.id }, req.body, {
+  const result = await Book.findOneAndUpdate({ _id: req.params.id }, payload, {
     new: true,
   });
 
@@ -278,8 +367,10 @@ export const BookService = {
   addBook,
   getAllBooks,
   getBooksOfACategory,
-  getAllBooksOfASubCategory,
+  getBooksOfASubCategory,
+  getBooksOfASubject,
   getBooksOfACourse,
+  getBooksOfAProstuti,
   getSingleBook,
   updateBook,
   deleteBook,
