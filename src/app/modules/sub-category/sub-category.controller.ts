@@ -34,6 +34,19 @@ const getAllSubCategories = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllUniqueSubCategories = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await SubCategoryService.getAllUniqueSubCategories();
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "All Unique SubCategories fetched successfully!",
+      data: result,
+    });
+  }
+);
+
 const getSingleSubCategory = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const result = await SubCategoryService.getSingleSubCategory(id);
@@ -71,6 +84,7 @@ const deleteSubCategory = catchAsync(async (req: Request, res: Response) => {
 export const SubCategoryController = {
   createSubCategory,
   getAllSubCategories,
+  getAllUniqueSubCategories,
   getSingleSubCategory,
   updateSubCategory,
   deleteSubCategory,

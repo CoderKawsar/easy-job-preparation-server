@@ -12,13 +12,16 @@ const bookSchema = new Schema<IBook>(
     format: { type: String, required: true },
     sample_pdf_link: { type: String },
     pdf_link: { type: String },
+    category_id: [{ type: Schema.Types.ObjectId, ref: "Course" }],
+    sub_category_id: [{ type: Schema.Types.ObjectId, ref: "Course" }],
     course_id: [{ type: Schema.Types.ObjectId, ref: "Course" }],
+    subject_id: [{ type: Schema.Types.ObjectId, ref: "Subject" }],
   },
   { timestamps: true, toJSON: { virtuals: true } }
 );
 
 bookSchema.index(
-  { title: 1, writer: 1, price: 1, format: 1, is_paid: 1 },
+  { title: 1, writer: 1, price: 1, format: 1 },
   { unique: true }
 );
 

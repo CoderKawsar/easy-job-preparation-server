@@ -22,6 +22,7 @@ export default {
     expires_in: process.env.JWT_EXPIRES_IN,
     refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN,
   },
+
   cloudinary: {
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -46,5 +47,8 @@ export default {
     private_key: process.env.NAGAD_PRIVATE_KEY,
     base_url: process.env.NAGAD_BASE_URL,
   },
-  firebase_messaging_key: process.env.FIREBASE_MESSAGING_KEY,
+  mobile: {
+    communication_key: process.env.PAYMENT_CREATE_KEY,
+    firebase_messaging_key: process.env.FIREBASE_MESSAGING_KEY,
+  },
 };

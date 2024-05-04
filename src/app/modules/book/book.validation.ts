@@ -18,7 +18,10 @@ const addBookZodSchema = z.object({
   ),
   sample_pdf_link: z.string({}).optional(),
   pdf_link: z.string({}).optional(),
+  category_id: z.array(z.string({})).optional(),
+  sub_category_id: z.array(z.string({})).optional(),
   course_id: z.array(z.string({})).optional(),
+  subject_id: z.array(z.string({})),
 });
 
 const updateBookZodSchema = z.object({
@@ -41,7 +44,10 @@ const updateBookZodSchema = z.object({
     .optional(),
   sample_pdf_link: z.string({}).optional(),
   pdf_link: z.string({}).optional(),
+  category_id: z.array(z.string({})).optional(),
+  sub_category_id: z.array(z.string({})).optional(),
   course_id: z.array(z.string({})).optional(),
+  subject_id: z.array(z.string({})).optional(),
 });
 
 export const BookValidation = {
