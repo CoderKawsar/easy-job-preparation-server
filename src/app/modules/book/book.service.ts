@@ -274,7 +274,7 @@ const getBooksOfAProstuti = async (
 // get single Book
 const getSingleBook = async (
   id: string,
-  isMobileApp: boolean
+  verifiedMobile: boolean
 ): Promise<IBook | null> => {
   const result = await Book.findById(id).populate({
     path: "course_id",
@@ -295,7 +295,7 @@ const getSingleBook = async (
 
   const booksData = JSON.parse(JSON.stringify(result));
 
-  if (isMobileApp && result?.pdf_link) {
+  if (verifiedMobile && result?.pdf_link) {
     booksData.pdf_link = LinkProtectionHelpers.decrypt(
       result?.pdf_link as string
     );
