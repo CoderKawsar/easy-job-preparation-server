@@ -48,7 +48,7 @@ export default {
     base_url: process.env.NAGAD_BASE_URL,
   },
   mobile: {
-    communication_key: process.env.PAYMENT_CREATE_KEY,
+    communication_key: process.env.ANDROID_COMMUNICATION_KEY,
     firebase_messaging_key: process.env.FIREBASE_MESSAGING_KEY,
   },
 };

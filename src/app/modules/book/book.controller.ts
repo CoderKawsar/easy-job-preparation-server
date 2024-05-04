@@ -7,6 +7,7 @@ import pick from "../../../shared/pick";
 import { bookFilterableFields } from "./book.constants";
 import { paginationFields } from "../../constants/pagination";
 import config from "../../../config";
+import { isVerfiedMobileApp } from "../../helpers/common";
 
 const addBook = catchAsync(async (req: Request, res: Response) => {
   const result = await BookService.addBook(req);
@@ -147,12 +148,9 @@ const getBooksOfAProstuti = catchAsync(async (req: Request, res: Response) => {
 const getSingleBook = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const appToken = req.headers["x-my-app-token"];
+  let verifiedMobile = isVerfiedMobileApp(req);
 
-  let isMobileApp: boolean = false;
-  if (appToken !== config.mobile.communication_key) isMobileApp = true;
-
-  const result = await BookService.getSingleBook(id, isMobileApp);
+  const result = await BookService.getSingleBook(id, verifiedMobile);
 
   sendResponse(res, {
     success: true,
