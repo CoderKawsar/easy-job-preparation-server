@@ -10,7 +10,7 @@ import { coursePlaylistSearchableFields } from "./course-playlist.constants";
 import { paginationHelpers } from "../../helpers/paginationHelpers";
 import { SortOrder } from "mongoose";
 import { ICourseFilters } from "../course/course.interface";
-import encryptLink from "../../helpers/protectLink";
+import { LinkProtectionHelpers } from "../../helpers/protectLink";
 
 // create CoursePlaylist
 const createCoursePlaylist = async (
@@ -24,7 +24,7 @@ const createCoursePlaylist = async (
   }
 
   const { playlist_link, ...others } = payload;
-  const encryptedPlaylistLink = encryptLink(playlist_link);
+  const encryptedPlaylistLink = LinkProtectionHelpers.encrypt(playlist_link);
   payload = {
     playlist_link: encryptedPlaylistLink,
     ...others,
@@ -142,7 +142,7 @@ const updateCoursePlaylist = async (
 ): Promise<ICoursePlaylist | null> => {
   if (payload.playlist_link) {
     const { playlist_link, ...others } = payload;
-    const encryptedPlaylistLink = encryptLink(playlist_link);
+    const encryptedPlaylistLink = LinkProtectionHelpers.encrypt(playlist_link);
     payload = {
       playlist_link: encryptedPlaylistLink,
       ...others,
