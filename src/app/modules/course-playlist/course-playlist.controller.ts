@@ -8,6 +8,8 @@ import ApiError from "../../../errors/ApiError";
 import pick from "../../../shared/pick";
 import { coursePlaylistFilterableFields } from "./course-playlist.constants";
 import { paginationFields } from "../../constants/pagination";
+import { isVerfiedMobileApp } from "../../helpers/common";
+import { Course } from "../course/course.model";
 
 const createCoursePlaylist = catchAsync(async (req: Request, res: Response) => {
   const result = await CoursePlaylistService.createCoursePlaylist(req.body);
@@ -43,21 +45,31 @@ const getPlaylistsOfACourse = catchAsync(
     const user_id = req.user?.userId;
     const { course_id } = req.params;
 
-    const currentDate = new Date();
-    const subscribed = await SubscriptionHistory.find({
-      user_id,
-      course_id,
-      expire_date: { $gte: currentDate },
-    });
+    const course = await Course.findById(course_id);
+    if (!course) throw new ApiError(httpStatus.OK, "Course not found!");
 
-    if (!subscribed.length) {
-      throw new ApiError(
-        httpStatus.OK,
-        "No subscription found. You haven't bought this course!"
-      );
+    if (course?.membership_type == "1") {
+      const currentDate = new Date();
+      const subscribed = await SubscriptionHistory.find({
+        user_id,
+        course_id,
+        expire_date: { $gte: currentDate },
+      });
+
+      if (!subscribed.length) {
+        throw new ApiError(
+          httpStatus.OK,
+          "No subscription found. You haven't bought this course!"
+        );
+      }
     }
 
-    const result = await CoursePlaylistService.getPlaylistsOfACourse(course_id);
+    const isMobileApp = isVerfiedMobileApp(req);
+
+    const result = await CoursePlaylistService.getPlaylistsOfACourse(
+      course_id,
+      isMobileApp
+    );
 
     sendResponse(res, {
       success: true,

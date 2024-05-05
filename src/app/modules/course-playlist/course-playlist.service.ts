@@ -8,7 +8,7 @@ import { IPaginationOptions } from "../../../interfaces/pagination";
 import { IGenericResponse } from "../../../interfaces/common";
 import { coursePlaylistSearchableFields } from "./course-playlist.constants";
 import { paginationHelpers } from "../../helpers/paginationHelpers";
-import { SortOrder } from "mongoose";
+import mongoose, { SortOrder } from "mongoose";
 import { ICourseFilters } from "../course/course.interface";
 import { LinkProtectionHelpers } from "../../helpers/protectLink";
 
@@ -103,11 +103,50 @@ const getAllCoursePlaylists = async (
 
 // get playlists of a course
 const getPlaylistsOfACourse = async (
-  course_id: string
+  course_id: string,
+  isMobileApp: boolean
 ): Promise<ICoursePlaylist[]> => {
+  // const result = await CoursePlaylist.aggregate([
+  //   {
+  //     $match: {
+  //       course_id: new mongoose.Types.ObjectId(course_id),
+  //     },
+  //   },
+  //   {
+  //     $project: {
+  //       _id: 1,
+  //       playlist_link: {
+  //         $cond: [
+  //           {
+  //             $and: [
+  //               { $eq: ["$isMobileApp", isMobileApp] },
+  //               { $ne: ["$playlist_link", ""] },
+  //             ],
+  //           },
+  //           "$playlist_link",
+  //           "",
+  //         ],
+  //       },
+  //       // decrypted_link: {
+  //       //   $cond: [
+  //       //     {
+  //       //       $and: [
+  //       //         { $eq: ["$isMobileApp", true] },
+  //       //         { $ne: ["$playlist_link", ""] },
+  //       //       ],
+  //       //     },
+  //       //     { $toString: LinkProtectionHelpers.decrypt("$playlist_link") },
+  //       //     "",
+  //       //   ],
+  //       // },
+  //     },
+  //   },
+  // ]);
+
   const result = await CoursePlaylist.find({
     course_id,
   });
+
   return result;
 };
 
