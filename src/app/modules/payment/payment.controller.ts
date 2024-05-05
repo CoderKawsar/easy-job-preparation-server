@@ -9,7 +9,7 @@ import { isVerfiedMobileApp } from "../../helpers/common";
 const paymentCreate = catchAsync(async (req: Request, res: Response) => {
   const result = await PaymentService.paymentCreate(req.body);
 
-  if (isVerfiedMobileApp(req)) {
+  if (!isVerfiedMobileApp(req)) {
     throw new ApiError(httpStatus.OK, "Unauthorized!");
   }
 
