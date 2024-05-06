@@ -9,6 +9,9 @@ import { userSearchableFields } from "./user.constants";
 import { paginationHelpers } from "../../helpers/paginationHelpers";
 import { SortOrder } from "mongoose";
 import { IPaginationOptions } from "../../../interfaces/pagination";
+import { jwtHelpers } from "../../helpers/jwtHelpers";
+import config from "../../../config";
+import { Secret } from "jsonwebtoken";
 
 // registering user/student
 const registerUser = async (userData: IUser) => {
@@ -113,6 +116,40 @@ const login = async (loginInfo: ILoginInfo) => {
     await UserUtills.createTokenRefreshTokenForUser(requestedUser);
 
   return { isPasswordMatched, accessToken, refreshToken };
+};
+
+// refresh token
+const refreshToken = async (token: string) => {
+  let verifiedToken = null;
+
+  try {
+    verifiedToken = jwtHelpers.verifyToken(
+      token,
+      config.jwt.refresh_secret as Secret
+    );
+  } catch (error) {
+    throw new ApiError(httpStatus.OK, "Invalid refresh token!");
+  }
+
+  const { userId } = verifiedToken;
+
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(httpStatus.OK, "User does not exist!");
+
+  const payload = {
+    userId: user._id,
+    role: user.role,
+    permission: user.permission,
+  };
+
+  // creating access token
+  const newAccessToken = jwtHelpers.createToken(
+    payload,
+    config.jwt.secret as string,
+    config.jwt.expires_in as string
+  );
+
+  return { accessToken: newAccessToken };
 };
 
 // get all users
@@ -254,6 +291,7 @@ export const UserService = {
   removePermissionFromAdmin,
   checkPermissionOfAdmin,
   login,
+  refreshToken,
   getAllUsers,
   getSingleUser,
   changeRoleOfAUser,

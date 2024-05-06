@@ -95,6 +95,33 @@ const login = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const refreshToken = catchAsync(async (req: Request, res: Response) => {
+  const { refreshToken } = req.cookies;
+  let token = refreshToken;
+
+  // if refresh token is not present in cookie, then check in body
+  if (!token) {
+    token = req.body.refreshToken;
+  }
+
+  const result = await UserService.refreshToken(token);
+
+  // set refresh token into cookie
+  const cookieOptions = {
+    secure: config.env === "production",
+    httpOnly: true,
+  };
+
+  res.cookie("refreshToken", refreshToken || token, cookieOptions);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "User token refreshed successfully!",
+    data: result,
+  });
+});
+
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
   const filters = pick(req.query, userFilterableFields);
   const paginationOptions = pick(req.query, paginationFields);
@@ -184,6 +211,7 @@ export const UserController = {
   removePermissionFromAdmin,
   checkPermissionOfAdmin,
   login,
+  refreshToken,
   getAllUsers,
   getSingleUser,
   changeRoleOfAUser,

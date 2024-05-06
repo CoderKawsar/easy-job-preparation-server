@@ -106,46 +106,19 @@ const getPlaylistsOfACourse = async (
   course_id: string,
   isMobileApp: boolean
 ): Promise<ICoursePlaylist[]> => {
-  // const result = await CoursePlaylist.aggregate([
-  //   {
-  //     $match: {
-  //       course_id: new mongoose.Types.ObjectId(course_id),
-  //     },
-  //   },
-  //   {
-  //     $project: {
-  //       _id: 1,
-  //       playlist_link: {
-  //         $cond: [
-  //           {
-  //             $and: [
-  //               { $eq: ["$isMobileApp", isMobileApp] },
-  //               { $ne: ["$playlist_link", ""] },
-  //             ],
-  //           },
-  //           "$playlist_link",
-  //           "",
-  //         ],
-  //       },
-  //       // decrypted_link: {
-  //       //   $cond: [
-  //       //     {
-  //       //       $and: [
-  //       //         { $eq: ["$isMobileApp", true] },
-  //       //         { $ne: ["$playlist_link", ""] },
-  //       //       ],
-  //       //     },
-  //       //     { $toString: LinkProtectionHelpers.decrypt("$playlist_link") },
-  //       //     "",
-  //       //   ],
-  //       // },
-  //     },
-  //   },
-  // ]);
-
   const result = await CoursePlaylist.find({
     course_id,
   });
+
+  if (isMobileApp) {
+    const decryptedResult = result?.map((playlist) => {
+      playlist.playlist_link = LinkProtectionHelpers.decrypt(
+        playlist?.playlist_link
+      );
+      return playlist;
+    });
+    return decryptedResult;
+  }
 
   return result;
 };

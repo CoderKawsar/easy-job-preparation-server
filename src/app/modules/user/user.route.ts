@@ -54,6 +54,9 @@ router.post(
   UserController.login
 );
 
+// refresh token
+router.post("/refresh-token", UserController.refreshToken);
+
 // get all users
 router.get(
   "/",

@@ -105,7 +105,7 @@ const BuyACourse = async (
   const alreadyHaveSubscription: ISubscriptionHistory[] | null =
     await SubscriptionHistory.find({
       user_id,
-      course_id: subscription?.course_id?.id,
+      course_id: subscription?.course_id?._id,
       expire_date: { $gt: today },
     });
   // finding the subscription that has most number of days
