@@ -5,7 +5,6 @@ import { Category } from "./category.model";
 import { Request } from "express";
 import { IUploadFile } from "../../../interfaces/file";
 import { FileUploadHelper } from "../../helpers/fileUploadHelper";
-import { SubCategory } from "../sub-category/sub-category.model";
 import mongoose from "mongoose";
 
 // create category

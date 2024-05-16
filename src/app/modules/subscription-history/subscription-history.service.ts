@@ -11,10 +11,8 @@ import {
   ISubscriptionHistory,
   ISubscriptionHistoryFilters,
 } from "./subscription-history.interface";
-import { Payment } from "../payment/payment.model";
-import axios from "axios";
-import config from "../../../config";
 import { PaymentUtills } from "../payment/payment.utills";
+import { ObjectId } from "mongodb";
 
 // create Subscription history
 const createSubscriptionHistory = async (
@@ -136,15 +134,74 @@ const getAllSubscriptionHistorys = async (
 
 // get my subscription-histories
 const getMySubscriptionHistories = async (user_id: string) => {
-  const result = await SubscriptionHistory.find({ user_id }).populate({
-    path: "course_id",
-    populate: {
-      path: "sub_category_id",
-      populate: {
-        path: "category_id",
+  const result = await SubscriptionHistory.aggregate([
+    {
+      $match: {
+        user_id: new ObjectId(user_id),
+        expire_date: { $gte: new Date() },
       },
     },
-  });
+    {
+      $lookup: {
+        from: "courses",
+        localField: "course_id",
+        foreignField: "_id",
+        as: "course_id",
+      },
+    },
+    {
+      $unwind: "$course_id",
+    },
+    {
+      $project: {
+        _id: 1,
+        user_id: 1,
+        is_active: 1,
+        expire_date: 1,
+        "course_id._id": 1,
+        "course_id.title": 1,
+        "course_id.banner": 1,
+        "course_id.sub_category_id": 1,
+      },
+    },
+    {
+      $lookup: {
+        localField: "course_id.sub_category_id",
+        foreignField: "_id",
+        from: "subcategories",
+        as: "course_id.sub_category_id",
+      },
+    },
+    {
+      $unwind: "$course_id.sub_category_id",
+    },
+    {
+      $lookup: {
+        localField: "course_id.sub_category_id.category_id",
+        foreignField: "_id",
+        from: "categories",
+        as: "course_id.sub_category_id.category_id",
+      },
+    },
+    {
+      $unwind: "$course_id.sub_category_id.category_id",
+    },
+    {
+      $project: {
+        _id: 1,
+        user_id: 1,
+        is_active: 1,
+        expire_date: 1,
+        "course_id._id": 1,
+        "course_id.title": 1,
+        "course_id.banner": 1,
+        "course_id.sub_category_id._id": 1,
+        "course_id.sub_category_id.title": 1,
+        "course_id.sub_category_id.category_id._id": 1,
+        "course_id.sub_category_id.category_id.title": 1,
+      },
+    },
+  ]);
 
   if (!result.length) {
     throw new ApiError(httpStatus.OK, "No subscription found!");

@@ -8,7 +8,6 @@ const createExamPaymentZodSchema = z.object({
     exam_id: z.string({
       required_error: "Exam id is required!",
     }),
-    invalid_date: z.date({}).optional(),
     trx_id: z.string({}).optional(),
     payment_ref_id: z.string({}).optional(),
   }),

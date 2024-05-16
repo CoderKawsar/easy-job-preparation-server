@@ -28,6 +28,7 @@ const createQuestion = async (payload: IQuestion): Promise<IQuestion> => {
       (sum, question) => sum + (question.mark || 0),
       0
     );
+
     if (totalMarkQuestionAdded + payload.mark > total_marks) {
       throw new ApiError(
         httpStatus.OK,
@@ -35,6 +36,7 @@ const createQuestion = async (payload: IQuestion): Promise<IQuestion> => {
       );
     }
   }
+
   const result = await Question.create(payload);
 
   return result;

@@ -8,6 +8,7 @@ export interface IUser {
   contact_no?: string;
   role: ENUM_USER_ROLE;
   permission?: string[];
+  sessionID?: string;
   password: string;
 }
 

@@ -21,6 +21,13 @@ const authUser =
 
       const isUserExist = await User.findById(verifiedUser.userId);
 
+      if (isUserExist?.sessionID !== verifiedUser?.sessionID) {
+        throw new ApiError(
+          httpStatus.OK,
+          "Session expired! New login occured in your account!"
+        );
+      }
+
       if (isUserExist) {
         req.user = verifiedUser; // role  , userId
       } else {
