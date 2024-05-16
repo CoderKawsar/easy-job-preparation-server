@@ -17,11 +17,11 @@ router.post(
 );
 
 // create super admin
-// router.post(
-//   "/create-super-admin",
-//   validateRequest(UserValidation.registerUserZodSchema),
-//   UserController.createSuperAdmin
-// );
+router.post(
+  "/create-super-admin",
+  validateRequest(UserValidation.registerUserZodSchema),
+  UserController.createSuperAdmin
+);
 
 // create admin
 router.post(
@@ -53,9 +53,6 @@ router.post(
   validateRequest(UserValidation.loginUserZodSchema),
   UserController.login
 );
-
-// refresh token
-router.post("/refresh-token", UserController.refreshToken);
 
 // get all users
 router.get(

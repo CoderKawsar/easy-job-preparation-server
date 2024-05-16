@@ -1,6 +1,5 @@
 import httpStatus from "http-status";
 import ApiError from "../../../errors/ApiError";
-import { SubCategory } from "../sub-category/sub-category.model";
 import { ICoursePlaylist } from "./course-playlist.interface";
 import { CoursePlaylist } from "./course-playlist.model";
 import { Course } from "../course/course.model";
@@ -8,7 +7,7 @@ import { IPaginationOptions } from "../../../interfaces/pagination";
 import { IGenericResponse } from "../../../interfaces/common";
 import { coursePlaylistSearchableFields } from "./course-playlist.constants";
 import { paginationHelpers } from "../../helpers/paginationHelpers";
-import mongoose, { SortOrder } from "mongoose";
+import { SortOrder } from "mongoose";
 import { ICourseFilters } from "../course/course.interface";
 import { LinkProtectionHelpers } from "../../helpers/protectLink";
 
@@ -103,23 +102,11 @@ const getAllCoursePlaylists = async (
 
 // get playlists of a course
 const getPlaylistsOfACourse = async (
-  course_id: string,
-  isMobileApp: boolean
+  course_id: string
 ): Promise<ICoursePlaylist[]> => {
   const result = await CoursePlaylist.find({
     course_id,
   });
-
-  if (isMobileApp) {
-    const decryptedResult = result?.map((playlist) => {
-      playlist.playlist_link = LinkProtectionHelpers.decrypt(
-        playlist?.playlist_link
-      );
-      return playlist;
-    });
-    return decryptedResult;
-  }
-
   return result;
 };
 

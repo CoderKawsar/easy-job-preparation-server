@@ -9,6 +9,7 @@ const userSchema = new Schema<IUser>(
     role: { type: String, required: true },
     permission: [{ type: String }],
     password: { type: String, required: true },
+    sessionID: { type: String },
   },
   { timestamps: true, toJSON: { virtuals: true } }
 );

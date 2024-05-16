@@ -28,6 +28,7 @@ const createTokenRefreshTokenForUser = async (
     userId: user._id,
     role: user.role,
     permission: user.permission,
+    sessionID: user.sessionID,
   };
 
   // creating access token

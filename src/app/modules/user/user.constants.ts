@@ -8,6 +8,7 @@ export const adminPermissions = [
   "book",
   "order_status",
   "order",
+  "subject",
 ] as const;
 
 export const userFilterableFields = [
