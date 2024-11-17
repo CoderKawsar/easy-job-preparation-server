@@ -1,9 +1,9 @@
 import { v2 as cloudinary } from "cloudinary";
-import multer from "multer";
-import * as fs from "fs";
+import multer, { FileFilterCallback } from "multer";
 import config from "../../config";
 import { ICloudinaryResponse, IUploadFile } from "../../interfaces/file";
-import sharp from "sharp";
+import ApiError from "../../errors/ApiError";
+import httpStatus from "http-status";
 
 cloudinary.config({
   cloud_name: config.cloudinary.cloud_name,
@@ -11,32 +11,57 @@ cloudinary.config({
   api_secret: config.cloudinary.api_secret,
 });
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./public/temp/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname);
-  },
-});
+const storage = multer.memoryStorage();
 
-const upload = multer({ storage: storage });
+// Allowed image types
+const allowedMimeTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/jpg",
+  "image/webp",
+  "image/svg+xml",
+  "image/gif",
+  "image/svg",
+];
+
+// filter file types
+const fileFilter = (
+  req: Request,
+  file: Express.Multer.File,
+  cb: FileFilterCallback
+) => {
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    cb(null, true); // Accept the file
+  } else {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Only image files are allowed!");
+  }
+};
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  // @ts-ignore
+  fileFilter,
+});
 
 const uploadToCloudinary = async (
   file: IUploadFile
 ): Promise<ICloudinaryResponse | undefined> => {
   return new Promise((resolve, reject) => {
-    cloudinary.uploader.upload(
-      file.path,
-      (error: Error, result: ICloudinaryResponse) => {
-        fs.unlinkSync(file.path);
-        if (error) {
-          reject(error);
-        } else {
-          resolve(result);
+    cloudinary.uploader
+      .upload_stream(
+        { folder: "/job-preparation-bd" }, // Optional: Specify folder in Cloudinary
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            // @ts-ignore
+            resolve(result);
+          }
         }
-      }
-    );
+      )
+      // @ts-ignore
+      .end(file.buffer); // Directly pass the buffer here
   });
 };
 
@@ -49,7 +74,7 @@ const deleteFromCloudinary = async (
       const publicId = parts.pop()?.replace(/\.[^/.]+$/, "");
       if (publicId) {
         cloudinary.uploader.destroy(
-          publicId,
+          `job-preparation-bd/${publicId}`,
           (error: Error, result: ICloudinaryResponse) => {
             if (error) {
               reject(error);
