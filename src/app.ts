@@ -18,6 +18,7 @@ const app: Application = express();
 
 const allowedOrigins = [
   `${config.frontend_site_url}`,
+  "https://checkout.stripe.com",
   // Add other allowed origins as needed
 ];
 

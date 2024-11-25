@@ -11,6 +11,17 @@ const addSettingsZodSchema = z.object({
   }),
 });
 
+const addOrEditShippingChargeZodSchema = z.object({
+  body: z.object({
+    is_outside_dhaka: z.boolean({
+      required_error: "Is outside dhaka value is required!",
+    }),
+    shipping_charge: z.number({
+      required_error: "Shipping charge is required!",
+    }),
+  }),
+});
+
 const updateSettingsZodSchema = z.object({
   body: z.object({
     key: z.string({}).optional(),
@@ -20,5 +31,6 @@ const updateSettingsZodSchema = z.object({
 
 export const SettingsValidation = {
   addSettingsZodSchema,
+  addOrEditShippingChargeZodSchema,
   updateSettingsZodSchema,
 };

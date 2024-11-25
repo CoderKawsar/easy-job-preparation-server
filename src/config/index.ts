@@ -47,6 +47,10 @@ export default {
     private_key: process.env.NAGAD_PRIVATE_KEY,
     base_url: process.env.NAGAD_BASE_URL,
   },
+  stripe: {
+    api_key: process.env.STRIPE_API_KEY,
+    webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
+  },
   mobile: {
     communication_key: process.env.ANDROID_COMMUNICATION_KEY,
     firebase_messaging_key: process.env.FIREBASE_MESSAGING_KEY,

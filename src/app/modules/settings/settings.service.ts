@@ -5,13 +5,39 @@ import { IPaginationOptions } from "../../../interfaces/pagination";
 import { paginationHelpers } from "../../helpers/paginationHelpers";
 import { SortOrder } from "mongoose";
 import { IGenericResponse } from "../../../interfaces/common";
-import { ISettings, ISettingsFilters } from "./settings.interface";
+import {
+  ISettings,
+  ISettingsFilters,
+  IShippingChargeEdit,
+} from "./settings.interface";
 import { Settings } from "./settings.model";
 import { settingsSearchableFields } from "./settings.constants";
 
 // add Settings
 const addSettings = async (payload: ISettings): Promise<ISettings> => {
   const result = await Settings.create(payload);
+
+  return result;
+};
+
+// add shipping charge
+const addOrEditShippingCharge = async (
+  payload: IShippingChargeEdit
+): Promise<ISettings> => {
+  const creationPayload = {
+    key: payload.is_outside_dhaka
+      ? "shipping_charge_outside_dhaka"
+      : "shipping_charge_inside_dhaka",
+    value: payload.shipping_charge,
+  };
+
+  const result = await Settings.findOneAndUpdate(
+    {
+      key: creationPayload.key,
+    },
+    creationPayload,
+    { upsert: true, new: true }
+  );
 
   return result;
 };
@@ -88,14 +114,7 @@ const getShippingChargeInsideDhaka = async (): Promise<number> => {
     key: "shipping_charge_inside_dhaka",
   });
 
-  if (!result) {
-    throw new ApiError(
-      httpStatus.OK,
-      "Shipping charge inside dhaka not found!"
-    );
-  }
-
-  return Number(result.value);
+  return Number(result?.value || 0);
 };
 
 // get shipping charge outside dhaka
@@ -104,14 +123,7 @@ const getShippingChargeOutsideDhaka = async (): Promise<number> => {
     key: "shipping_charge_outside_dhaka",
   });
 
-  if (!result) {
-    throw new ApiError(
-      httpStatus.OK,
-      "Shipping charge inside dhaka not found!"
-    );
-  }
-
-  return Number(result.value);
+  return Number(result?.value || 0);
 };
 
 // update Settings
@@ -134,6 +146,7 @@ const deleteSettings = async (id: string) => {
 
 export const SettingsService = {
   addSettings,
+  addOrEditShippingCharge,
   getAllSettings,
   getShippingChargeInsideDhaka,
   getShippingChargeOutsideDhaka,

@@ -41,6 +41,14 @@ router.get(
   SettingsController.getSingleSettings
 );
 
+// update shipping charge
+router.patch(
+  "/shipping-charge",
+  authRole(ENUM_USER_ROLE.SUPER_ADMIN),
+  validateRequest(SettingsValidation.addOrEditShippingChargeZodSchema),
+  SettingsController.addOrEditShippingCharge
+);
+
 // update single Settings
 router.patch(
   "/:id",

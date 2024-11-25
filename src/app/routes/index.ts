@@ -23,6 +23,7 @@ import { NoticeRoutes } from "../modules/notice/notice.route";
 import { MobileAppRoutes } from "../modules/mobile-app/mobile-app.route";
 import { SubjectRoutes } from "../modules/subject/subject.route";
 import { PaymentRoutes } from "../modules/payment/payment.route";
+import { PaymentStripeRoutes } from "../modules/payment-stripe/stripe.route";
 
 const router = Router();
 
@@ -49,6 +50,7 @@ const moduleRoutes = [
   { path: "/payments", route: PaymentRoutes },
   { path: "/bkash", route: BkashRoutes },
   { path: "/nagad", route: NagadPaymentRoutes },
+  { path: "/stripe", route: PaymentStripeRoutes },
   { path: "/settings", route: SettingsRoutes },
   { path: "/mobile-app", route: MobileAppRoutes },
 ];

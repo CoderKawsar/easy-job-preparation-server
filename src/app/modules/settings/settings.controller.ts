@@ -18,6 +18,19 @@ const addSettings = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const addOrEditShippingCharge = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await SettingsService.addOrEditShippingCharge(req.body);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Shipping charge added/updated successfully!",
+      data: result,
+    });
+  }
+);
+
 const getAllSettings = catchAsync(async (req: Request, res: Response) => {
   const filters = pick(req.query, settingsFilterableFields);
   const paginationOptions = pick(req.query, paginationFields);
@@ -99,6 +112,7 @@ const deleteSettings = catchAsync(async (req: Request, res: Response) => {
 
 export const SettingsController = {
   addSettings,
+  addOrEditShippingCharge,
   getAllSettings,
   getShippingChargeInsideDhaka,
   getShippingChargeOutsideDhaka,
