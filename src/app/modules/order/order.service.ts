@@ -13,7 +13,6 @@ import { IOrderDetails } from "../order-details/order-details.interface";
 import { Settings } from "../settings/settings.model";
 import { isJSON } from "../../helpers/common";
 import { OrderStatus } from "../order-status/order-status.model";
-import { Payment } from "../payment/payment.model";
 import { PaymentUtills } from "../payment/payment.utills";
 
 // create Order

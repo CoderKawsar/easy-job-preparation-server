@@ -16,7 +16,7 @@ import { ObjectId } from "mongodb";
 
 // create Subscription history
 const createSubscriptionHistory = async (
-  payload: ISubscriptionHistory
+  payload: Partial<ISubscriptionHistory>
 ): Promise<ISubscriptionHistory> => {
   // to check if the course is present of the provided course-id
   const { user_id, subscription_id, trx_id, payment_ref_id } = payload;
@@ -60,9 +60,11 @@ const createSubscriptionHistory = async (
   expire_date.setMonth(
     expire_date.getMonth() + subscription.subscription_duration_in_months
   );
+  expire_date.setDate(expire_date.getDate() - 1);
+
   if (alreadyHaveSubscription?.length) {
     // Calculate the number of days left for the subscription
-    const daysLeft = Math.ceil(
+    const daysLeft = Math.floor(
       (latestSubscription.expire_date.getTime() - today) / (1000 * 60 * 60 * 24)
     );
     expire_date.setDate(expire_date.getDate() + daysLeft);
@@ -140,6 +142,18 @@ const getMySubscriptionHistories = async (user_id: string) => {
         user_id: new ObjectId(user_id),
         expire_date: { $gte: new Date() },
       },
+    },
+    {
+      $sort: { expire_date: -1 }, // Sort by expire_date in descending order
+    },
+    {
+      $group: {
+        _id: "$course_id", // Group by course_id (or another unique field)
+        subscription: { $first: "$$ROOT" }, // Take the document with the latest expire_date
+      },
+    },
+    {
+      $replaceRoot: { newRoot: "$subscription" }, // Flatten the structure
     },
     {
       $lookup: {

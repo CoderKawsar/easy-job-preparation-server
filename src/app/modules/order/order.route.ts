@@ -12,11 +12,7 @@ const router = Router();
 // create Order
 router.post(
   "/",
-  authRole(
-    ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.STUDENT
-  ),
+  authRole(ENUM_USER_ROLE.STUDENT),
   validateRequest(OrderValidation.createOrderZodSchema),
   OrderController.createOrder
 );

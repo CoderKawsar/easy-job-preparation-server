@@ -243,8 +243,9 @@ const BuyAllCoursesOfASubCategory = async (payload: {
     },
     {
       $match: {
-        "subscription.subscription_duration_in_months":
-          subscription_duration_in_months,
+        "subscription.subscription_duration_in_months": Number(
+          subscription_duration_in_months
+        ),
       },
     },
     {
@@ -266,7 +267,7 @@ const BuyAllCoursesOfASubCategory = async (payload: {
     );
   }
 
-  if (courseSubscriptions.length < 1) {
+  if (!courseSubscriptions.length) {
     throw new ApiError(
       httpStatus.OK,
       "No course subscription found for your desired sub category"
@@ -286,11 +287,11 @@ const BuyAllCoursesOfASubCategory = async (payload: {
           course_id: subscription?.course_id,
           amount: subscription?.cost,
           trx_id: trx_id ? `${trx_id}-bundle-${uuidv4().substring(0, 5)}` : "",
-          payment_ref_id: payment_ref_id
-            ? `${payment_ref_id}-bundle-${uuidv4().substring(0, 5)}`
-            : "",
           is_active: true,
         };
+        payment_ref_id &&
+          (subscriptionHistoryPayload.payment_ref_id = payment_ref_id);
+
         let expire_date = new Date();
         expire_date.setMonth(
           expire_date.getMonth() + subscription.subscription_duration_in_months
