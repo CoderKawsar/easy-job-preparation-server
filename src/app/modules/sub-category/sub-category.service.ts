@@ -97,7 +97,17 @@ const getAllSubCategories = async (
 const getAllUniqueSubCategories = async () => {
   const result = await SubCategory.distinct("title");
 
-  let predefinedSubcategories = ["প্রিলিমিনারি", "লিখিত", "ভাইভা", "অন্যান্য"];
+  // let predefinedSubcategories = ["প্রিলিমিনারি", "লিখিত", "ভাইভা", "অন্যান্য"];
+  let predefinedSubcategories = [
+    "প্রিলিমিনারি",
+    "Priliminary",
+    "লিখিত",
+    "Written",
+    "ভাইভা",
+    "Viva",
+    "অন্যান্য",
+    "Others",
+  ];
 
   let sortedSubcategories = result.sort((a, b) => {
     let indexA = predefinedSubcategories.indexOf(a);
