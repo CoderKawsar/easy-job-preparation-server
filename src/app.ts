@@ -16,11 +16,19 @@ const app: Application = express();
 //   })
 // );
 
-const allowedOrigins = [
-  `${config.frontend_site_url}`,
-  "https://checkout.stripe.com",
-  // Add other allowed origins as needed
-];
+const allowedOrigins =
+  config.env === "development"
+    ? [
+        "http://localhost:3000",
+        "https://bdjob-preparation.vercel.app",
+        "https://bd-job-preparation.vercel.app",
+        "https://checkout.stripe.com",
+      ]
+    : [
+        "https://bdjob-preparation.vercel.app",
+        "https://bd-job-preparation.vercel.app",
+        "https://checkout.stripe.com",
+      ];
 
 app.use(
   cors({
